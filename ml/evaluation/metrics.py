@@ -40,12 +40,28 @@ class ScenarioEvaluator:
         if len(generated_clean) == 0 or len(historical_clean) == 0:
             return {'ks_statistic': np.nan, 'p_value': 0.0}
         
-        # Perform KS test
-        ks_statistic, p_value = ks_2samp(generated_clean, historical_clean)
-        
+        # Perform KS test (ensure safe unpacking and float conversion)
+        ks_result = ks_2samp(generated_clean, historical_clean)
+        if isinstance(ks_result, tuple) and len(ks_result) >= 2:
+            ks_stat_raw, p_value_raw = ks_result[0], ks_result[1]
+            try:
+                ks_statistic = float(np.asarray(ks_stat_raw).item())
+            except Exception:
+                ks_statistic = float(ks_stat_raw) if isinstance(ks_stat_raw, (int, float)) else np.nan
+            try:
+                p_value = float(np.asarray(p_value_raw).item())
+            except Exception:
+                p_value = float(p_value_raw) if isinstance(p_value_raw, (int, float)) else 0.0
+        else:
+            try:
+                ks_statistic = float(np.asarray(ks_result).item())
+            except Exception:
+                ks_statistic = np.nan
+            p_value = 0.0
+
         return {
-            'ks_statistic': float(ks_statistic),
-            'p_value': float(p_value)
+            'ks_statistic': ks_statistic,
+            'p_value': p_value
         }
     
     def autocorrelation_similarity(
@@ -78,9 +94,20 @@ class ScenarioEvaluator:
                     'acf_mse': np.inf
                 }
             
-            # Compute autocorrelation functions
-            acf_generated = acf(generated_clean, nlags=max_lags, fft=True)
-            acf_historical = acf(historical_clean, nlags=max_lags, fft=True)
+            # Compute autocorrelation functions; acf may return (acf, confint) in some versions
+            acf_generated_raw = acf(generated_clean, nlags=max_lags, fft=True)
+            acf_historical_raw = acf(historical_clean, nlags=max_lags, fft=True)
+
+            # If acf returned a tuple (acf, confint), extract the first element
+            if isinstance(acf_generated_raw, tuple):
+                acf_generated = np.asarray(acf_generated_raw[0])
+            else:
+                acf_generated = np.asarray(acf_generated_raw)
+
+            if isinstance(acf_historical_raw, tuple):
+                acf_historical = np.asarray(acf_historical_raw[0])
+            else:
+                acf_historical = np.asarray(acf_historical_raw)
             
             # Compute similarity score (1 - normalized MSE)
             mse = np.mean((acf_generated - acf_historical) ** 2)
@@ -136,14 +163,23 @@ class ScenarioEvaluator:
             # Compute rolling volatility
             generated_df = pd.DataFrame({'returns': generated_clean})
             historical_df = pd.DataFrame({'returns': historical_clean})
-            
+
             gen_vol = generated_df['returns'].rolling(window=window_size).std()
             hist_vol = historical_df['returns'].rolling(window=window_size).std()
-            
-            # Remove NaN values from rolling calculation
-            gen_vol_clean = gen_vol.dropna().values
-            hist_vol_clean = hist_vol.dropna().values
-            
+
+            # Remove NaN values from rolling calculation and ensure numpy arrays
+            gen_vol_clean = np.asarray(gen_vol.dropna())
+            hist_vol_clean = np.asarray(hist_vol.dropna())
+
+            # Ensure there are enough points to compute lag-1 correlation
+            if gen_vol_clean.size < 2 or hist_vol_clean.size < 2:
+                return {
+                    'volatility_similarity_score': 0.0,
+                    'vol_corr_generated': 0.0,
+                    'vol_corr_historical': 0.0,
+                    'vol_ks_p_value': 0.0
+                }
+
             # Compute volatility autocorrelation (volatility clustering measure)
             gen_vol_corr = np.corrcoef(gen_vol_clean[:-1], gen_vol_clean[1:])[0, 1]
             hist_vol_corr = np.corrcoef(hist_vol_clean[:-1], hist_vol_clean[1:])[0, 1]
@@ -153,7 +189,24 @@ class ScenarioEvaluator:
             hist_vol_corr = 0.0 if np.isnan(hist_vol_corr) else hist_vol_corr
             
             # KS test on volatility distributions
-            vol_ks_stat, vol_ks_p = ks_2samp(gen_vol_clean, hist_vol_clean)
+            vol_ks_result = ks_2samp(np.asarray(gen_vol_clean), np.asarray(hist_vol_clean))
+            # ks_2samp returns (statistic, pvalue)
+            if isinstance(vol_ks_result, tuple) and len(vol_ks_result) >= 2:
+                vol_ks_stat_raw, vol_ks_p_raw = vol_ks_result[0], vol_ks_result[1]
+                try:
+                    vol_ks_stat = float(np.asarray(vol_ks_stat_raw).item())
+                except Exception:
+                    vol_ks_stat = float(vol_ks_stat_raw) if isinstance(vol_ks_stat_raw, (int, float)) else 0.0
+                try:
+                    vol_ks_p = float(np.asarray(vol_ks_p_raw).item())
+                except Exception:
+                    vol_ks_p = float(vol_ks_p_raw) if isinstance(vol_ks_p_raw, (int, float)) else 0.0
+            else:
+                try:
+                    vol_ks_stat = float(np.asarray(vol_ks_result).item())
+                except Exception:
+                    vol_ks_stat = 0.0
+                vol_ks_p = 0.0
             
             # Similarity score based on correlation difference
             corr_diff = abs(gen_vol_corr - hist_vol_corr)

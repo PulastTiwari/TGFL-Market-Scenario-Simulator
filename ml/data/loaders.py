@@ -115,23 +115,23 @@ class MarketDataLoader:
         Returns:
             Tuple of (input_sequences, target_sequences)
         """
-        # Get target series and remove NaN values
-        series = data[target_column].dropna().values
-        
+        # Get target series and remove NaN values, ensure numpy array
+        series = np.asarray(data[target_column].dropna())
+
         if len(series) < sequence_length + 1:
             raise ValueError(f"Not enough data: {len(series)} < {sequence_length + 1}")
-        
+
         sequences = []
         targets = []
-        
+
         for i in range(0, len(series) - sequence_length, step_size):
             seq = series[i:i + sequence_length]
             target = series[i + sequence_length]
             sequences.append(seq)
             targets.append(target)
 
-        sequences_arr = np.array(sequences)
-        targets_arr = np.array(targets)
+        sequences_arr = np.asarray(sequences)
+        targets_arr = np.asarray(targets)
 
         # Ensure at least one sequence is returned
         return sequences_arr, targets_arr
@@ -254,8 +254,10 @@ class SyntheticDataGenerator:
             raise ValueError("regime_lengths must contain at least one regime with positive length")
 
         combined = pd.concat(frames, ignore_index=True)
-        # Recompute log returns for the combined series
-        combined['log_returns'] = np.log(combined['close']).diff()
+
+        # Recompute log returns for the combined series (ensure pandas Series)
+        log_close = pd.Series(np.log(pd.to_numeric(combined['close'], errors='coerce')))
+        combined['log_returns'] = log_close.diff()
         combined = combined.fillna(0.0)
         return combined
 
@@ -292,6 +294,7 @@ def create_federated_partitions(
                 if i >= len(partitions):
                     partitions.append({})
                 
+                # ensure returned partitions have numpy-compatible data where needed
                 partitions[i][symbol] = df.iloc[start_idx:end_idx].copy()
         
         return partitions
