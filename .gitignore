@@ -1,0 +1,9 @@
+.venv
+api/venv-py311
+logs/
+**/__pycache__/
+node_modules/
+.DS_Store
+.env
+.env.local
+*.pyc

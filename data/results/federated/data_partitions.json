@@ -1,0 +1,1 @@
+{"strategy": "iid", "num_clients": 2, "partition_sizes": [40, 40], "total_samples": 80}

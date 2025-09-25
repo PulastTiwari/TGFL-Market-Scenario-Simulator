@@ -1,0 +1,14 @@
+{
+  "python.defaultInterpreterPath": "/Users/pulastsinghtiwari/Downloads/VS code/TGFL Market Scenario Simulator/api/venv-py311/bin/python",
+  "python.pythonPath": "/Users/pulastsinghtiwari/Downloads/VS code/TGFL Market Scenario Simulator/api/venv-py311/bin/python",
+  "python.languageServer": "Pylance",
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}",
+    "${workspaceFolder}/ml",
+    "${workspaceFolder}/shared",
+    "${workspaceFolder}/api"
+    ,"/Users/pulastsinghtiwari/Downloads/VS code/TGFL Market Scenario Simulator/api/venv-py311/lib/python3.11/site-packages"
+  ],
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.diagnosticMode": "workspace"
+}
