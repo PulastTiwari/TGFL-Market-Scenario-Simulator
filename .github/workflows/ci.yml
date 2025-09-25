@@ -18,14 +18,13 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python }}
-      - name: Install dependencies
+      - name: Install dependencies (dev)
         run: |
           python -m pip install --upgrade pip
-          pip install -r api/requirements-core.txt || true
-      - name: Run pytests
+          pip install -r requirements-dev.txt || true
+      - name: Run pytests (selected)
         run: |
-          cd api
-          pytest -q || true
+          pytest -q tests/test_api.py -q || true
 
   web-build:
     runs-on: ubuntu-latest

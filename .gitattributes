@@ -1,0 +1,5 @@
+# Enforce LF line endings
+* text=auto eol=lf
+
+# Treat Jupyter notebooks as binary to avoid large diffs
+*.ipynb binary

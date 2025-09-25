@@ -1,0 +1,11 @@
+# Aggregate runtime requirements for development (lightweight)
+fastapi>=0.70
+uvicorn>=0.18
+numpy>=1.25,<2.0
+pandas>=1.5
+scipy>=1.9
+matplotlib>=3.6
+seaborn>=0.12
+pytest>=7.0
+# Torch is optional and heavy; suggest installing per platform
+# pip install --index-url https://download.pytorch.org/whl/cpu torch

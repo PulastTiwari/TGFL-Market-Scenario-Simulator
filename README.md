@@ -23,25 +23,27 @@ Generate realistic market scenarios via federated learning without centralizing 
 
 ### Prerequisites
 
-- Python 3.10+
+- Python 3.11 (recommended for CPU PyTorch wheels)
 - Node.js 18+
 - 8GB+ RAM (CPU-only training supported)
 
 ### Setup
 
 ```bash
-# Backend setup
-cd api
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+# Backend setup (from repo root)
+python3.11 -m venv .venv311
+source .venv311/bin/activate
+pip install --upgrade pip
 pip install -r requirements.txt
+# Optional: install full ML extras inside the venv if you have compatible hardware
+# pip install --index-url https://download.pytorch.org/whl/cpu torch
 
 # Frontend setup
-cd ../web
+cd web
 npm install
 
-# Run development servers
-cd ../api && uvicorn main:app --reload --port 8000
+# Run development servers (in separate shells)
+cd api && uvicorn main:app --reload --port 8000
 cd ../web && npm run dev
 ```
 

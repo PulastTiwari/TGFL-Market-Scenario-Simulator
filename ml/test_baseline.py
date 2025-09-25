@@ -20,15 +20,17 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 
 # Import our modules (will work once dependencies are installed)
+ML_BASELINE_AVAILABLE = True
 try:
     from data.loaders import MarketDataLoader, SyntheticDataGenerator
     from models.transformer import create_tiny_transformer
     from evaluation.metrics import ScenarioEvaluator
     print("✅ All modules imported successfully")
 except ImportError as e:
+    # Don't exit on import failure; make module import-safe for CI and tooling.
+    ML_BASELINE_AVAILABLE = False
     print(f"⚠️  Import error (expected without dependencies): {e}")
     print("Run this script after installing requirements.txt")
-    sys.exit(0)
 
 def test_data_generation():
     """Test synthetic data generation"""

@@ -1,0 +1,8 @@
+# Development / test dependencies (lightweight)
+pytest>=7.0
+httpx
+pandas
+yfinance
+# scipy and torch are heavy and optional; run in 'full-ml' workflow
+# scipy
+# torch
