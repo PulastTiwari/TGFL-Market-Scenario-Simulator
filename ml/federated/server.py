@@ -92,8 +92,10 @@ class TGFLStrategy(FedAvg):
             self._save_model(aggregated_parameters, server_round)
             
             # Calculate average training loss
+            # Ensure numeric dtype for numpy operations: convert list of
+            # scalars to a numeric ndarray before taking the mean.
             train_losses = [res.metrics.get("train_loss", 0.0) for _, res in results]
-            avg_train_loss = np.mean(train_losses) if train_losses else 0.0
+            avg_train_loss = float(np.mean(np.array(train_losses, dtype=float))) if train_losses else 0.0
             
             self.round_losses.append(avg_train_loss)
             
@@ -134,12 +136,15 @@ class TGFLStrategy(FedAvg):
         print(f"Round {server_round} evaluation:")
         print(f"  Average test loss: {avg_loss:.6f}")
         print(f"  Participants: {len(results)}")
-        
+
+        # Convert to numeric ndarray to satisfy type checkers and
+        # guarantee numeric computations at runtime.
+        test_losses_arr = np.array(test_losses, dtype=float)
         metrics = {
-            "avg_test_loss": avg_loss,
+            "avg_test_loss": float(avg_loss),
             "participants": len(results),
-            "min_test_loss": float(np.min(test_losses)),
-            "max_test_loss": float(np.max(test_losses))
+            "min_test_loss": float(np.min(test_losses_arr)),
+            "max_test_loss": float(np.max(test_losses_arr))
         }
         
         return avg_loss, metrics

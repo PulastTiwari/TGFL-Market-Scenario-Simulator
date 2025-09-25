@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import ks_2samp
+from typing import Any
 from statsmodels.tsa.stattools import acf
 
 # Deterministic seed for reproducibility
@@ -96,8 +97,10 @@ def compute_metrics(baseline_prices, synth_prices):
     
     # KS test on returns
     try:
-        ks_res = ks_2samp(r_base, r_synth)
-        ks_pvalue = float(ks_res.pvalue)
+        # scipy.stats returns a result object with `.pvalue` but some type
+        # checkers don't recognize it precisely; cast to Any for safety.
+        ks_res: Any = ks_2samp(r_base, r_synth)
+        ks_pvalue = float(getattr(ks_res, "pvalue", 0.0))
     except Exception:
         ks_pvalue = 0.0
     
