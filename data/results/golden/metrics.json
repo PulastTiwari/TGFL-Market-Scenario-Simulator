@@ -1,0 +1,12 @@
+{
+  "ks_pvalue": 0.9702870467806907,
+  "acf_mae": 0.03479787858816712,
+  "rolling_vol_mae": 0.002680509458491653,
+  "num_points": 513,
+  "baseline_return_std": 0.015213952771225945,
+  "synth_return_std": 0.014288891512629623,
+  "seed": 12345,
+  "generation_method": "AR1_fitted_to_baseline",
+  "generated_at": "2025-09-25T22:14:01.636833",
+  "model_version": "golden_v1"
+}
