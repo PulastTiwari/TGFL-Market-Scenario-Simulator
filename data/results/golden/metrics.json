@@ -7,6 +7,6 @@
   "synth_return_std": 0.014288891512629623,
   "seed": 12345,
   "generation_method": "AR1_fitted_to_baseline",
-  "generated_at": "2025-09-25T22:14:01.636833",
+  "generated_at": "2025-09-25T22:15:55.236868",
   "model_version": "golden_v1"
 }
